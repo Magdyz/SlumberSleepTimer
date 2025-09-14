@@ -2,28 +2,39 @@
 
 package com.app.slumber.ui.timer
 
+// ✨ ADDED: Import for AnimatedVisibility to fade the text in and out smoothly.
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RestartAlt
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+// ✨ ADDED: Import for TextAlign to center the instructional text.
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
@@ -48,69 +59,107 @@ fun TimerScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(32.dp), // Increased padding
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
         ) {
-            // ✅ ADDED a minimalist title
-            Text(
-                text = "Slumber",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Light
-            )
 
-            // ✅ ADDED a small spacer for balance
-            Spacer(modifier = Modifier.height(16.dp))
+            // The time display now takes up the most space.
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                // ✨ ADDED: A Column to hold both the timer and the new instructional text.
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = formattedTime,
+                        style = MaterialTheme.typography.displayLarge,
+                        fontWeight = FontWeight.Medium
+                    )
 
-            Text(
-                text = formattedTime,
-                style = MaterialTheme.typography.displayLarge,
-                fontWeight = FontWeight.Light
-            )
+                    // ✨ ADDED: Animated instructional text that only appears when the timer is idle.
+                    AnimatedVisibility(visible = !isTimerRunning && !isTimerPaused) {
+                        Text(
+                            text = "Set duration to begin your slumber",
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+                }
+            }
 
-            Spacer(modifier = Modifier.height(64.dp))
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // Slider section
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
                     text = "Set Duration: ${timerDurationMinutes.roundToInt()} min",
                     style = MaterialTheme.typography.bodyLarge
                 )
+                Spacer(modifier = Modifier.height(8.dp))
                 Slider(
                     value = timerDurationMinutes,
                     onValueChange = onDurationChange,
                     valueRange = 1f..120f,
                     steps = 118,
-                    enabled = !isTimerRunning && !isTimerPaused
+                    enabled = !isTimerRunning && !isTimerPaused,
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
+            // Redesigned control buttons
             Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                if (isTimerRunning) {
-                    FilledTonalButton(onClick = onPauseClick) {
-                        Icon(Icons.Default.Pause, contentDescription = "Pause Timer")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Pause")
-                    }
-                } else {
-                    FilledTonalButton(onClick = if (isTimerPaused) onResumeClick else onStartClick) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Start Timer")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (isTimerPaused) "Resume" else "Start")
-                    }
+                // Secondary cancel button (less prominent)
+                IconButton(
+                    onClick = onCancelClick,
+                    enabled = isTimerRunning || isTimerPaused,
+                ) {
+                    Icon(
+                        Icons.Default.RestartAlt,
+                        contentDescription = "Cancel Timer",
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
 
-                FilledTonalButton(
-                    onClick = onCancelClick,
-                    enabled = isTimerRunning || isTimerPaused
+                Spacer(modifier = Modifier.width(24.dp))
+
+                // Large, circular primary action button
+                Button(
+                    onClick = {
+                        when {
+                            isTimerRunning -> onPauseClick()
+                            isTimerPaused -> onResumeClick()
+                            else -> onStartClick()
+                        }
+                    },
+                    modifier = Modifier.size(90.dp),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
-                    Icon(Icons.Default.RestartAlt, contentDescription = "Cancel Timer")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cancel")
+                    Icon(
+                        imageVector = if (isTimerRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = if (isTimerRunning) "Pause Timer" else "Start Timer",
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
+
+                // Spacer to balance the layout since there isn't a button on the right
+                Spacer(modifier = Modifier.width(24.dp))
+                Spacer(modifier = Modifier.size(32.dp)) // This spacer is the same size as the icon in IconButton
             }
         }
     }

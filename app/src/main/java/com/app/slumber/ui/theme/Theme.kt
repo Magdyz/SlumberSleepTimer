@@ -17,16 +17,26 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = MutedLavender,
+    background = DarkNavy,
+    surface = DarkNavy,
+    onPrimary = White, // Text on the primary button, kept white for clarity
+    onBackground = LightGrayText, // Softer text color
+    onSurface = LightGrayText,    // Softer text color
+    surfaceVariant = DarkGray
 )
 
+// ✨ UPDATED: Light color scheme for consistency.
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = MutedLavender,
+    background = OffWhite,
+    surface = OffWhite,
+    onPrimary = White,
+    onBackground = Black,
+    onSurface = Black,
+    surfaceVariant = LightGray
 )
+
 
 @Composable
 fun SlumberTheme(

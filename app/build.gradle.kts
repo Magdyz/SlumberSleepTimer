@@ -13,8 +13,8 @@ android {
         applicationId = "com.app.slumber"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2 // Incremented for the new release to the Play Store
-        versionName = "1.0.1" // Incremented for the new release
+        versionCode = 3 // Incremented for the new release to the Play Store
+        versionName = "1.0.2" // Incremented for the new release
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -85,6 +85,9 @@ dependencies {
 
     // Compose Runtime - for compose functions
     implementation("androidx.compose.runtime:runtime:1.5.11")
+
+    // google font
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.6.8") // Check for the latest version
 
 
 }
