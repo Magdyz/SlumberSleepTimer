@@ -71,7 +71,13 @@ fun TimerScreen(
                 // ✨ ADDED: A Column to hold both the timer and the new instructional text.
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = formattedTime,
+                        text = if (!isTimerRunning && !isTimerPaused) {
+                            // show initial duration when idle
+                            "${timerDurationMinutes.roundToInt()}:00"
+                        } else {
+                            formattedTime
+                        }
+                        ,
                         style = MaterialTheme.typography.displayLarge,
                         fontWeight = FontWeight.Medium
                     )
@@ -79,8 +85,8 @@ fun TimerScreen(
                     // ✨ ADDED: Animated instructional text that only appears when the timer is idle.
                     AnimatedVisibility(visible = !isTimerRunning && !isTimerPaused) {
                         Text(
-                            text = "Set duration to begin your slumber",
-                            style = MaterialTheme.typography.bodyLarge,
+                            text = "Set duration to begin your slumber", // ✅ sentence case
+                            style = MaterialTheme.typography.bodyMedium, // ✅ smaller, subtler
                             textAlign = TextAlign.Center,
                             modifier = Modifier.padding(top = 8.dp)
                         )
@@ -94,8 +100,8 @@ fun TimerScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Set Duration: ${timerDurationMinutes.roundToInt()} min",
-                    style = MaterialTheme.typography.bodyLarge
+                    text = "Set duration: ${timerDurationMinutes.roundToInt()} min", // ✅ sentence case
+                    style = MaterialTheme.typography.titleMedium // ✅ stronger, modern
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Slider(

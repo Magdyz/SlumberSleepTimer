@@ -1,7 +1,8 @@
-// file: app/src/main/java/com/app/slumber/service/TimerService.kt
-
 package com.app.slumber.service
 
+import android.app.PendingIntent
+import com.app.slumber.ui.MainActivity
+import androidx.core.app.TaskStackBuilder
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -13,7 +14,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.app.slumber.R
-import com.app.slumber.utils.TimeFormatter // ✅ IMPORT the new utility
+import com.app.slumber.utils.TimeFormatter
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +24,8 @@ import java.util.concurrent.TimeUnit
 data class TimerServiceState(
     val formattedTime: String = "00:00",
     val isRunning: Boolean = false,
-    val isPaused: Boolean = false
+    val isPaused: Boolean = false,
+    val initialDurationMinutes: Long = 45 // ✅ default duration tracked here
 )
 
 class TimerService : Service() {
@@ -35,10 +37,18 @@ class TimerService : Service() {
     private val binder = TimerBinder()
     private var timerJob: Job? = null
     private var remainingSeconds = 0L
+    private var initialDurationMinutes: Long = 45 // ✅ keep track of last chosen duration
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val _state = MutableStateFlow(TimerServiceState())
+    private val _state = MutableStateFlow(
+        TimerServiceState(
+            formattedTime = TimeFormatter.format(TimeUnit.MINUTES.toSeconds(45)),
+            isRunning = false,
+            isPaused = false,
+            initialDurationMinutes = 45
+        )
+    )
     val state = _state.asStateFlow()
 
     private lateinit var audioManager: AudioManager
@@ -61,12 +71,20 @@ class TimerService : Service() {
     }
 
     fun startTimer(durationMinutes: Long) {
+        initialDurationMinutes = durationMinutes // ✅ save initial duration
+
         val totalSeconds = if (_state.value.isPaused) {
             remainingSeconds
         } else {
             TimeUnit.MINUTES.toSeconds(durationMinutes)
         }
-        _state.value = _state.value.copy(isRunning = true, isPaused = false)
+
+        _state.value = _state.value.copy(
+            isRunning = true,
+            isPaused = false,
+            initialDurationMinutes = durationMinutes
+        )
+
         startCountdown(totalSeconds)
         startForegroundService()
     }
@@ -80,7 +98,12 @@ class TimerService : Service() {
     fun cancelTimer() {
         timerJob?.cancel()
         remainingSeconds = 0L
-        _state.value = TimerServiceState()
+        _state.value = TimerServiceState(
+            formattedTime = TimeFormatter.format(TimeUnit.MINUTES.toSeconds(initialDurationMinutes)),
+            isRunning = false,
+            isPaused = false,
+            initialDurationMinutes = initialDurationMinutes
+        )
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
@@ -89,8 +112,10 @@ class TimerService : Service() {
         remainingSeconds = totalSeconds
         timerJob = serviceScope.launch {
             while (remainingSeconds > 0) {
-                // ✅ UPDATED to use the TimeFormatter utility
-                _state.value = _state.value.copy(formattedTime = TimeFormatter.format(remainingSeconds))
+                _state.value = _state.value.copy(
+                    formattedTime = TimeFormatter.format(remainingSeconds),
+                    initialDurationMinutes = initialDurationMinutes
+                )
                 updateNotification()
                 delay(1000)
                 remainingSeconds--
@@ -124,13 +149,30 @@ class TimerService : Service() {
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
-    private fun buildNotification() = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-        .setContentTitle("Slumber Sleep Timer")
-        .setContentText("Time remaining: ${_state.value.formattedTime}")
-        .setSmallIcon(R.drawable.ic_stat_name)
-        .setOnlyAlertOnce(true)
-        .setOngoing(true)
-        .build()
+    private fun buildNotification(): android.app.Notification {
+        val resultIntent = Intent(this, MainActivity::class.java).apply {
+            action = Intent.ACTION_MAIN
+            addCategory(Intent.CATEGORY_LAUNCHER)
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+
+        val pendingIntent = TaskStackBuilder.create(this).run {
+            addNextIntentWithParentStack(resultIntent)
+            getPendingIntent(
+                0,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+
+        return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle("Slumber Sleep Timer")
+            .setContentText("Time remaining: ${_state.value.formattedTime}")
+            .setSmallIcon(R.drawable.ic_stat_name)
+            .setOnlyAlertOnce(true)
+            .setOngoing(true)
+            .setContentIntent(pendingIntent)
+            .build()
+    }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -143,8 +185,6 @@ class TimerService : Service() {
             manager.createNotificationChannel(serviceChannel)
         }
     }
-
-    // ✅ DELETED the old, redundant formatTime function from this file.
 
     override fun onDestroy() {
         super.onDestroy()

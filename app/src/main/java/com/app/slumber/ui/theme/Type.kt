@@ -1,4 +1,3 @@
-// file: app/src/main/java/com/app/slumber/ui/theme/Type.kt
 package com.app.slumber.ui.theme
 
 import androidx.compose.material3.Typography
@@ -8,9 +7,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
-import com.app.slumber.R // Make sure to import your R file
+import com.app.slumber.R // Import your R file for certs
 
-// ✨ NEW: Add Google Fonts provider and define the Montserrat font family.
+// ✅ Google Fonts provider and Montserrat family
 val provider = GoogleFont.Provider(
     providerAuthority = "com.google.android.gms.fonts",
     providerPackage = "com.google.android.gms",
@@ -40,26 +39,40 @@ val montserratFontFamily = FontFamily(
     )
 )
 
-// ✨ UPDATED: Typography styles to use the new Montserrat font.
+// ✅ Clean and modern Material3 typography scale
 val Typography = Typography(
+    // Main timer display
     displayLarge = TextStyle(
         fontFamily = montserratFontFamily,
         fontWeight = FontWeight.Light,
-        fontSize = 86.sp, // Slightly larger for impact
+        fontSize = 86.sp,
         lineHeight = 92.sp,
         letterSpacing = (-1.5).sp
     ),
-    headlineMedium = TextStyle(
+
+    // Section titles & labels (e.g., "Set duration: 45 min")
+    titleMedium = TextStyle(
+        fontFamily = montserratFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 20.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.15.sp
+    ),
+
+    // Instructional / helper text (e.g., "Set duration to begin your slumber")
+    bodyMedium = TextStyle(
         fontFamily = montserratFontFamily,
         fontWeight = FontWeight.Normal,
-        fontSize = 34.sp,
-        lineHeight = 40.sp,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
         letterSpacing = 0.25.sp
     ),
+
+    // General body text (fallback, paragraphs, etc.)
     bodyLarge = TextStyle(
         fontFamily = montserratFontFamily,
         fontWeight = FontWeight.Normal,
-        fontSize = 18.sp, // Slightly larger for readability
+        fontSize = 18.sp,
         lineHeight = 26.sp,
         letterSpacing = 0.5.sp
     )
