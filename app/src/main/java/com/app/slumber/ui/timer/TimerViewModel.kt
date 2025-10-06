@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.update
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-// ✅ UI state is just a wrapper around the service state
+// ✅ UI state mirrors whatever the service exposes
 data class TimerUiState(
     val serviceState: TimerServiceState = TimerServiceState()
 ) {
@@ -48,10 +48,10 @@ class TimerViewModel @Inject constructor(
             isBound = true
 
             timerService?.let { svc ->
-                // ✅ Push current service state immediately
+                // ✅ Immediately sync the latest service state
                 _uiState.update { it.copy(serviceState = svc.state.value) }
 
-                // ✅ Cancel previous collector if any
+                // ✅ Cancel old collector if it exists
                 serviceStateJob?.cancel()
 
                 // ✅ Collect fresh updates
@@ -72,7 +72,7 @@ class TimerViewModel @Inject constructor(
     fun bindToService() {
         if (!isBound) {
             Intent(context, TimerService::class.java).also { intent ->
-                // Start the service so it survives temporary unbinds during rotation
+                // ✅ Start service explicitly so it survives process recreation
                 context.startService(intent)
                 context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
             }
@@ -89,7 +89,7 @@ class TimerViewModel @Inject constructor(
         }
     }
 
-    // ✅ Update duration only when timer is idle
+    // ✅ Update duration only if the service is idle
     fun setDuration(minutes: Float) {
         if (!uiState.value.serviceState.isRunning && !uiState.value.serviceState.isPaused) {
             val newDurationSeconds = TimeUnit.MINUTES.toSeconds(minutes.toLong())
@@ -105,7 +105,8 @@ class TimerViewModel @Inject constructor(
     }
 
     fun startTimer() {
-        timerService?.startTimer(_uiState.value.serviceState.initialDurationMinutes)
+        // ✅ Always use the duration currently in the service state
+        timerService?.startTimer(uiState.value.serviceState.initialDurationMinutes)
     }
 
     fun pauseTimer() {

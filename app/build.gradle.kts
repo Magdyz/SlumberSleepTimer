@@ -13,8 +13,8 @@ android {
         applicationId = "com.app.slumber"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3 // Incremented for the new release to the Play Store
-        versionName = "1.0.2" // Incremented for the new release
+        versionCode = 7 // Incremented for the new release to the Play Store
+        versionName = "1.0.7" // Incremented for the new release
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

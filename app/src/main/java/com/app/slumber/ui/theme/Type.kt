@@ -1,42 +1,20 @@
+// file: app/src/main/java/com/app/slumber/ui/theme/Type.kt
 package com.app.slumber.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.googlefonts.Font
-import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
-import com.app.slumber.R // Import your R file for certs
+import com.app.slumber.R
 
-// ✅ Google Fonts provider and Montserrat family
-val provider = GoogleFont.Provider(
-    providerAuthority = "com.google.android.gms.fonts",
-    providerPackage = "com.google.android.gms",
-    certificates = R.array.com_google_android_gms_fonts_certs
-)
-
+// ✅ Montserrat font family (offline in res/font/)
 val montserratFontFamily = FontFamily(
-    Font(
-        googleFont = GoogleFont("Montserrat"),
-        fontProvider = provider,
-        weight = FontWeight.Light,
-    ),
-    Font(
-        googleFont = GoogleFont("Montserrat"),
-        fontProvider = provider,
-        weight = FontWeight.Normal,
-    ),
-    Font(
-        googleFont = GoogleFont("Montserrat"),
-        fontProvider = provider,
-        weight = FontWeight.Medium,
-    ),
-    Font(
-        googleFont = GoogleFont("Montserrat"),
-        fontProvider = provider,
-        weight = FontWeight.Bold
-    )
+    Font(R.font.montserrat_light, weight = FontWeight.Light),
+    Font(R.font.montserrat_regular, weight = FontWeight.Normal),
+    Font(R.font.montserrat_medium, weight = FontWeight.Medium),
+    Font(R.font.montserrat_bold, weight = FontWeight.Bold),
 )
 
 // ✅ Clean and modern Material3 typography scale
@@ -50,7 +28,7 @@ val Typography = Typography(
         letterSpacing = (-1.5).sp
     ),
 
-    // Section titles & labels (e.g., "Set duration: 45 min")
+    // Section titles & labels (e.g., "Set Duration: 45 min")
     titleMedium = TextStyle(
         fontFamily = montserratFontFamily,
         fontWeight = FontWeight.Medium,
